@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Threads Video and Image Downloader</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="css/index.css">
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="navbar-brand">
+                <h2>Threads Dowloader</h2>
+            </a>
+        </div>
+    </nav>
+
+    <main>
+        <div class="hero">
+            <div class="container">
+                <div class="hero-top">
+                    <div class="hero-top-item">
+                        <i class="fa-solid fa-video"></i>
+                        <span>Videos</span>
+                    </div>
+                    <div class="hero-top-item">
+                        <i class="fa-solid fa-image"></i>
+                        <span>Photos</span>
+                    </div>
+                </div>
+                <div class="hero-center">
+                    <p>Download threads videos & image</p>
+                </div>
+                <div class="hero-bottom">
+                    <form method="POST" id="downloadForm">
+                        <input type="text" name="url" placeholder="Enter Video or Image URL" required>
+                        <button type="submit">
+                            <i class="fa-solid fa-download"></i>
+                            <span>Download</span>
+                        </button>
+                    </form>
+                    <div class="example">
+                        <b> Example:</b> https://www.threads.net/t/CucH8WoIanL
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="result">
+            <div class="container">
+
+            </div>
+            <div id="loading">
+                <div class="loadingio-spinner-rolling-td287xh9kwb">
+                    <div class="ldio-52fx4805y4o">
+                        <div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <a href="/privacy-policy">Privacy Policy</a>
+    </footer>
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+        const form = document.getElementById('downloadForm');
+        const resultContainer = document.querySelector('.result .container');
+        const exampleContainer = document.querySelector('.example');
+        const loading = document.getElementById('loading');
+        const videos = [];
+        const images = [];
+
+        form.addEventListener('submit', handleFormSubmit);
+
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+
+            resultContainer.innerHTML = '';
+            loading.style.display = 'flex';
+            exampleContainer.style.display = 'none';
+
+            try {
+                const formData = new FormData(form);
+                const url = formData.get('url');
+                const response = await axios.post('/fetch', { url });
+
+                if (response.status === 200) {
+                    const data = response.data;
+                    const renderMediaContentWithData = renderMediaContent.bind(null, data.content, data.title, data.avatar, data.user);
+                    renderMediaContentWithData();
+                }
+            } catch (err) {
+                console.log(err);
+                
+                resultContainer.innerHTML = `<div class="err-message">${err.response.data}</div>`
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        function renderMediaContent(content, title, avatar, user) {
+            content.forEach(c => {
+                const mediaContainer = createMediaContainer();
+                const mediaUserContainer = createMediaUserContainer(avatar, user);
+                const mediaTitleContainer = createMediaTitleContainer(title);
+
+                mediaContainer.appendChild(mediaUserContainer);
+                mediaContainer.appendChild(mediaTitleContainer);
+
+                if (c.type === "video") {
+                    const videoContainer = createVideoContainer(c.src);
+                    mediaContainer.appendChild(videoContainer);
+                } else if (c.type === "image") {
+                    const imageContainer = createImageContainer(c.src);
+                    mediaContainer.appendChild(imageContainer);
+                }
+
+                const downloadLink = createDownloadLink(c.src);
+                mediaContainer.appendChild(downloadLink);
+
+                resultContainer.appendChild(mediaContainer);
+            });
+        }
+
+        function createMediaContainer() {
+            const mediaContainer = document.createElement('div');
+            mediaContainer.classList.add('media');
+            return mediaContainer;
+        }
+
+        function createMediaUserContainer(avatar, user) {
+            const mediaUserContainer = document.createElement('div');
+            mediaUserContainer.classList.add('media-user');
+
+            const mediaUserImageContainer = document.createElement('img');
+            mediaUserImageContainer.src = avatar;
+            mediaUserContainer.appendChild(mediaUserImageContainer);
+
+            const mediaUsernameContainer = document.createElement('span');
+            mediaUsernameContainer.classList.add('media-username');
+            mediaUsernameContainer.innerText = '@' + user;
+            mediaUserContainer.appendChild(mediaUsernameContainer);
+
+            return mediaUserContainer;
+        }
+
+        function createMediaTitleContainer(title) {
+            const mediaTitleContainer = document.createElement('span');
+            mediaTitleContainer.classList.add('media-title');
+            mediaTitleContainer.innerText = title;
+            return mediaTitleContainer;
+        }
+
+        function createVideoContainer(src) {
+            const videoContainer = document.createElement('video');
+            videoContainer.setAttribute("controls", "1");
+            videoContainer.setAttribute("loop", "1");
+
+            const videoSourceContainer = document.createElement('source');
+            videoSourceContainer.src = src;
+            videoContainer.appendChild(videoSourceContainer);
+
+            videoContainer.classList.add('video-container');
+            return videoContainer;
+        }
+
+        function createImageContainer(src) {
+            const imageContainer = document.createElement('div');
+            imageContainer.classList.add('image-container');
+
+            const img = document.createElement('img');
+            img.src = src;
+            imageContainer.appendChild(img);
+
+            return imageContainer;
+        }
+
+        function createDownloadLink(src) {
+            const downloadLink = document.createElement('a');
+            downloadLink.classList.add('download-button');
+            downloadLink.href = src;
+            downloadLink.download = src;
+            downloadLink.target = "blank";
+            downloadLink.textContent = 'Download';
+            return downloadLink;
+        }
+    </script>
+
+</body>
+
+</html>
