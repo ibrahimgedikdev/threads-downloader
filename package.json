@@ -1,7 +1,7 @@
 {
   "scripts": {
-    "start": "nodemon app.js",
-    "build": "netlify deploy --prod"
+    "start": "./node_modules/.bin/netlify-lambda serve src",
+    "build": "./node_modules/.bin/netlify-lambda build src"
   },
   "dependencies": {
     "axios": "^1.4.0",
