@@ -7,7 +7,7 @@ const cheerio = require('cheerio');
 
 
 router.get('/', async (req, res) => {
-    res.render("index");
+    res.render("views/index");
 });
 
 router.post('/fetch', async (req, res) => {
