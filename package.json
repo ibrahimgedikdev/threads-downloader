@@ -1,7 +1,7 @@
 {
   "main": "./src/app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node src/app.js"
   },
   "dependencies": {
     "axios": "^1.4.0",
